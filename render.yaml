@@ -11,5 +11,5 @@ services:
       - key: NODE_VERSION
         value: 20
       - key: CORS_ORIGIN
-        value: https://YOUR_GITHUB_USERNAME.github.io
+        value: https://shuning302.github.io
 
