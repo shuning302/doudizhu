@@ -6,4 +6,5 @@ node_modules/
 dist/
 .cache/
 .turbo/
+SSH_GITHUB_SETUP.md
 
