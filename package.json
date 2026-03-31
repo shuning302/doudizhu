@@ -2,13 +2,9 @@
   "name": "doudizhu-skills",
   "private": false,
   "version": "0.1.0",
-  "workspaces": [
-    "server",
-    "web"
-  ],
   "scripts": {
-    "dev": "npm run dev -w server",
-    "start": "npm run start -w server"
+    "dev": "npm run dev --prefix server",
+    "start": "npm run start --prefix server"
   }
 }
 

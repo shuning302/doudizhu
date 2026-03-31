@@ -4,12 +4,14 @@ services:
     env: node
     rootDir: server
     plan: free
-    buildCommand: npm install
+    buildCommand: cd server && npm install
     startCommand: npm start
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
         value: 20
+      - key: YARN_ENABLED
+        value: false
       - key: CORS_ORIGIN
         value: https://shuning302.github.io
 
