@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>技能斗地主（原型）</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b1220;
+        --panel: #121a2b;
+        --text: #eaf0ff;
+        --muted: #a9b4d0;
+        --brand: #6aa6ff;
+        --danger: #ff6a6a;
+        --border: rgba(255, 255, 255, 0.08);
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: radial-gradient(
+            1200px 600px at 20% 0%,
+            rgba(106, 166, 255, 0.25),
+            transparent 60%
+          ),
+          radial-gradient(
+            800px 500px at 80% 30%,
+            rgba(255, 106, 106, 0.12),
+            transparent 55%
+          ),
+          var(--bg);
+        color: var(--text);
+      }
+      a {
+        color: var(--brand);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 24px auto;
+        padding: 0 16px;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 16px;
+      }
+      .card {
+        background: color-mix(in oklab, var(--panel), black 10%);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+      .card h2 {
+        margin: 0;
+        padding: 14px 14px 10px;
+        font-size: 14px;
+        letter-spacing: 0.2px;
+        color: var(--muted);
+        border-bottom: 1px solid var(--border);
+      }
+      .card .body {
+        padding: 14px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input,
+      button {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        outline: none;
+      }
+      button {
+        cursor: pointer;
+        background: color-mix(in oklab, var(--brand), black 65%);
+        border-color: color-mix(in oklab, var(--brand), black 30%);
+      }
+      button.secondary {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      button.danger {
+        background: color-mix(in oklab, var(--danger), black 65%);
+        border-color: color-mix(in oklab, var(--danger), black 30%);
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+      .hint {
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.5;
+      }
+      .pill {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .players {
+        display: grid;
+        gap: 10px;
+      }
+      .player {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .player b {
+        font-weight: 650;
+      }
+      .log {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          "Liberation Mono", "Courier New", monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--muted);
+        white-space: pre-wrap;
+      }
+      .hand {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .cardBtn {
+        width: auto;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--border);
+        font-size: 12px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .cardBtn.selected {
+        border-color: color-mix(in oklab, var(--brand), white 10%);
+        background: color-mix(in oklab, var(--brand), black 75%);
+      }
+      .grid3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+      }
+      @media (max-width: 860px) {
+        .wrap {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <section class="card">
+        <h2>加入 / 创建房间</h2>
+        <div class="body">
+          <label for="name">昵称</label>
+          <input id="name" placeholder="比如：Didi" />
+          <div style="height: 10px"></div>
+          <div class="row">
+            <button id="create">创建房间</button>
+            <button id="join" class="secondary">加入房间</button>
+          </div>
+          <div style="height: 10px"></div>
+          <label for="roomId">房间号</label>
+          <input id="roomId" placeholder="例如：A1B2C3" />
+          <div class="hint">
+            - 这是一个可联机原型：你创建后，把浏览器地址栏的链接发给微信好友即可。<br />
+            - 房间最多 2 个真人 + 1 个机器人（先把联机打通，规则/技能下一步补齐）。<br />
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>
+          房间状态
+          <span id="statusPill" class="pill" style="margin-left: 8px"
+            >未连接</span
+          >
+        </h2>
+        <div class="body">
+          <div style="display: flex; gap: 10px; flex-wrap: wrap">
+            <span class="pill">房间：<span id="roomPill">-</span></span>
+            <span class="pill">阶段：<span id="stagePill">-</span></span>
+          </div>
+
+          <div style="height: 12px"></div>
+          <div class="players" id="players"></div>
+
+          <div style="height: 12px"></div>
+          <div id="gameArea" style="display: none">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap">
+              <span class="pill">你的手牌：<span id="handCount">0</span></span>
+              <span class="pill">地主：<span id="landlordPill">-</span></span>
+              <span class="pill">当前出牌：<span id="turnPill">-</span></span>
+              <span class="pill">超时托管倒计时：<span id="turnLeft">-</span></span>
+            </div>
+
+            <div style="height: 10px"></div>
+            <div id="bidPanel" style="display: none">
+              <span class="pill">叫分阶段：最高 <span id="bidHighest">-</span></span>
+              <div style="height: 8px"></div>
+              <div class="grid3">
+                <button id="bid0" class="secondary">叫 0</button>
+                <button id="bid1" class="secondary">叫 1</button>
+                <button id="bid2" class="secondary">叫 2</button>
+                <button id="bid3" class="secondary">叫 3</button>
+                <div></div>
+                <div></div>
+              </div>
+            </div>
+
+            <div id="doublePanel" style="display: none">
+              <span class="pill">加倍阶段：你是否加倍？</span>
+              <div style="height: 8px"></div>
+              <div class="grid3">
+                <button id="doubleYes" class="secondary">加倍</button>
+                <button id="doubleNo" class="secondary">不加倍</button>
+                <div></div>
+              </div>
+            </div>
+
+            <div id="scorePanel" style="display: none">
+              <span class="pill">本局结果：<span id="scoreText">-</span></span>
+            </div>
+
+            <div style="height: 10px"></div>
+            <div class="grid3">
+              <button id="skillPlusOne" class="secondary">技能：点数+1</button>
+              <button id="skillStealBottom2" class="secondary">技能：底牌抽2</button>
+              <button id="giveBottom" class="secondary">地主拿底牌</button>
+            </div>
+
+            <div style="height: 10px"></div>
+            <div class="grid3">
+              <button id="choosePlusOne" class="secondary">选择：点数+1</button>
+              <button id="chooseStealBottom2" class="secondary">
+                选择：底牌抽2
+              </button>
+              <button id="pass" class="secondary">过</button>
+            </div>
+
+            <div style="height: 10px"></div>
+            <div class="row">
+              <button id="play">出牌</button>
+              <button id="clearSel" class="secondary">清空选择</button>
+            </div>
+
+            <div style="height: 10px"></div>
+            <label>你的手牌（点击选择）</label>
+            <div class="hand" id="hand"></div>
+          </div>
+
+          <div style="height: 12px"></div>
+          <div class="row">
+            <button id="copyLink" class="secondary">复制邀请链接</button>
+            <button id="leave" class="danger">离开</button>
+          </div>
+
+          <div style="height: 12px"></div>
+          <label for="chat">消息（会显示到日志）</label>
+          <input id="chat" placeholder="回车发送" />
+
+          <div style="height: 12px"></div>
+          <div class="log" id="log"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      const params = new URLSearchParams(location.search);
+      const backend = params.get("backend");
+      const socket = backend ? io(backend) : io();
+      let currentRoom = null;
+      let lastRoom = null;
+      const selected = new Set();
+      let countdownInterval = null;
+
+      function setPill(el, text) {
+        el.textContent = text;
+      }
+
+      function render(room) {
+        currentRoom = room?.id || null;
+        lastRoom = room || null;
+        setPill($("roomPill"), room?.id || "-");
+        setPill($("stagePill"), room?.stage || "-");
+
+        const players = room?.players || [];
+        $("players").innerHTML = players
+          .map((p) => {
+            const right = p.isBot
+              ? "BOT"
+              : p.connected
+                ? "在线"
+                : "离线";
+            return `
+              <div class="player">
+                <div><b>${escapeHtml(p.name)}</b> <span style="color: var(--muted)">(${escapeHtml(p.id.slice(0, 6))})</span></div>
+                <div class="pill">${right}</div>
+              </div>
+            `;
+          })
+          .join("");
+
+        const log = (room?.log || [])
+          .map((x) => {
+            const t = new Date(x.t);
+            const ts = t.toLocaleTimeString();
+            return `[${ts}] ${x.msg}`;
+          })
+          .join("\n");
+        $("log").textContent = log || "（暂无）";
+
+        const game = room?.game;
+        if (!game || !game.me) {
+          $("gameArea").style.display = "none";
+          return;
+        }
+        $("gameArea").style.display = "block";
+        setPill($("landlordPill"), shortId(game.landlord));
+        setPill($("turnPill"), shortId(game.turn));
+        $("handCount").textContent = String(game.me.hand?.length || 0);
+
+        // Turn countdown (server-driven)
+        if (countdownInterval) {
+          clearInterval(countdownInterval);
+          countdownInterval = null;
+        }
+        const updateTurnLeft = () => {
+          const leftMs = (game.turnEndsAt || 0) - Date.now();
+          const leftSec = leftMs > 0 ? Math.ceil(leftMs / 1000) : 0;
+          $("turnLeft").textContent = game.stage === "playing" ? `${leftSec}s` : "-";
+        };
+        if (game.stage === "playing" && game.turnEndsAt) {
+          updateTurnLeft();
+          countdownInterval = setInterval(updateTurnLeft, 1000);
+        } else {
+          $("turnLeft").textContent = "-";
+        }
+
+        // Buttons visibility / enable rules
+        const myId = game.me.id;
+        const myTurn = game.turn === myId && game.stage === "playing";
+
+        const showBid = game.stage === "bidding";
+        $("bidPanel").style.display = showBid ? "block" : "none";
+        if (showBid) {
+          $("bidHighest").textContent =
+            game.bidding?.highestBid != null ? String(game.bidding.highestBid) : "-";
+          const canAct = game.bidding?.turn === myId;
+          $("bid0").disabled = !canAct;
+          $("bid1").disabled = !canAct;
+          $("bid2").disabled = !canAct;
+          $("bid3").disabled = !canAct;
+        }
+
+        const showDouble = game.stage === "doubling";
+        $("doublePanel").style.display = showDouble ? "block" : "none";
+        if (showDouble) {
+          $("doubleYes").disabled = false;
+          $("doubleNo").disabled = false;
+        }
+
+        const showScore = game.stage === "ended" && game.score;
+        $("scorePanel").style.display = showScore ? "block" : "none";
+        if (showScore) {
+          const winner = players.find((p) => p.id === game.score.winnerId)?.name || "-";
+          const special = game.score.isSpring
+            ? "春天"
+            : game.score.isAntiSpring
+              ? "反春"
+              : "普通";
+          $("scoreText").textContent = `${winner} 获胜，单位分 ${game.score.unit}，特例 ${special}，封顶指数 ${game.score.cappedExponent}`;
+        }
+
+        $("choosePlusOne").disabled = game.stage !== "choose_skill";
+        $("chooseStealBottom2").disabled = game.stage !== "choose_skill";
+
+        const iAmLandlord = game.landlord === game.me.id;
+        $("giveBottom").disabled = !(game.stage === "bottom" && iAmLandlord);
+
+        const mySkill = game.me.skill?.skillId || null;
+        const myUsed = !!game.me.skill?.used;
+        $("skillPlusOne").disabled = !(
+          mySkill === "plus_one" &&
+          !myUsed &&
+          game.stage === "playing" &&
+          myTurn
+        );
+        $("skillStealBottom2").disabled = !(
+          mySkill === "steal_bottom_2" &&
+          !myUsed &&
+          game.stage === "bottom"
+        );
+
+        $("play").disabled = !myTurn;
+        $("pass").disabled = !myTurn || !game.lastPlay;
+
+        // Hand render
+        const hand = game.me.hand || [];
+        $("hand").innerHTML = hand
+          .map((c) => {
+            const isSel = selected.has(c.id);
+            return `<div class="cardBtn ${isSel ? "selected" : ""}" data-id="${escapeHtml(
+              c.id
+            )}">${escapeHtml(c.label)}</div>`;
+          })
+          .join("");
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      socket.on("connect", () => setPill($("statusPill"), "已连接"));
+      socket.on("disconnect", () => setPill($("statusPill"), "已断开"));
+      socket.on("room:update", (room) => render(room));
+
+      function getName() {
+        return $("name").value.trim() || "玩家";
+      }
+
+      function tokenKey(roomId) {
+        return `ddz_token_${roomId}`;
+      }
+
+      function getToken(roomId) {
+        if (!roomId) return "";
+        return localStorage.getItem(tokenKey(roomId)) || "";
+      }
+
+      function setToken(roomId, token) {
+        if (!roomId || !token) return;
+        localStorage.setItem(tokenKey(roomId), String(token));
+      }
+
+      $("create").onclick = () => {
+        socket.emit("room:create", { name: getName() }, (res) => {
+          if (!res?.roomId) return;
+          history.replaceState({}, "", `/?room=${encodeURIComponent(res.roomId)}`);
+          $("roomId").value = res.roomId;
+          if (res.token) setToken(res.roomId, res.token);
+        });
+      };
+
+      $("join").onclick = () => {
+        const roomId = $("roomId").value.trim();
+        const token = getToken(roomId);
+        socket.emit("room:join", { roomId, name: getName(), token }, (res) => {
+          if (!res?.ok) {
+            alert(
+              res?.error === "ROOM_FULL"
+                ? "房间满了（最多2个真人）"
+                : "加入失败"
+            );
+            return;
+          }
+          history.replaceState({}, "", `/?room=${encodeURIComponent(res.roomId)}`);
+          if (res.token) setToken(res.roomId, res.token);
+        });
+      };
+
+      $("leave").onclick = () => {
+        socket.emit("room:leave", {}, () => {
+          history.replaceState({}, "", `/`);
+          render(null);
+        });
+      };
+
+      $("copyLink").onclick = async () => {
+        const room = currentRoom || $("roomId").value.trim();
+        if (!room) return alert("还没有房间号");
+        const url = new URL(location.href);
+        url.searchParams.set("room", room);
+        await navigator.clipboard.writeText(url.toString());
+        alert("已复制邀请链接，可以发微信给朋友");
+      };
+
+      $("chat").addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const text = $("chat").value.trim();
+        $("chat").value = "";
+        socket.emit("chat:send", { text });
+      });
+
+      function shortId(id) {
+        return id ? String(id).slice(0, 6) : "-";
+      }
+
+      $("hand").addEventListener("click", (e) => {
+        const el = e.target.closest("[data-id]");
+        if (!el) return;
+        const id = el.getAttribute("data-id");
+        if (!id) return;
+        if (selected.has(id)) selected.delete(id);
+        else selected.add(id);
+        if (lastRoom) render(lastRoom);
+      });
+
+      $("clearSel").onclick = () => {
+        selected.clear();
+        if (lastRoom) render(lastRoom);
+      };
+
+      $("bid0").onclick = () => {
+        socket.emit("game:bid", { score: 0 }, (res) => {
+          if (!res?.ok) alert("叫分失败");
+        });
+      };
+      $("bid1").onclick = () => {
+        socket.emit("game:bid", { score: 1 }, (res) => {
+          if (!res?.ok) alert("叫分失败");
+        });
+      };
+      $("bid2").onclick = () => {
+        socket.emit("game:bid", { score: 2 }, (res) => {
+          if (!res?.ok) alert("叫分失败");
+        });
+      };
+      $("bid3").onclick = () => {
+        socket.emit("game:bid", { score: 3 }, (res) => {
+          if (!res?.ok) alert("叫分失败");
+        });
+      };
+
+      $("doubleYes").onclick = () => {
+        socket.emit("game:double", { on: true }, (res) => {
+          if (!res?.ok) alert("加倍失败");
+        });
+      };
+      $("doubleNo").onclick = () => {
+        socket.emit("game:double", { on: false }, (res) => {
+          if (!res?.ok) alert("加倍失败");
+        });
+      };
+
+      $("choosePlusOne").onclick = () => {
+        socket.emit("game:skillSelect", { skillId: "plus_one" }, (res) => {
+          if (!res?.ok) alert("选择失败");
+        });
+      };
+      $("chooseStealBottom2").onclick = () => {
+        socket.emit("game:skillSelect", { skillId: "steal_bottom_2" }, (res) => {
+          if (!res?.ok) alert("选择失败");
+        });
+      };
+
+      $("giveBottom").onclick = () => {
+        socket.emit("game:giveBottom", {}, (res) => {
+          if (!res?.ok) alert("操作失败（需要地主且在发底牌阶段）");
+        });
+      };
+
+      $("skillPlusOne").onclick = () => {
+        const first = [...selected][0];
+        if (!first) return alert("先选一张牌再用技能");
+        socket.emit("game:skillUse", { kind: "plus_one", cardId: first }, (res) => {
+          if (!res?.ok) alert("技能使用失败");
+          selected.clear();
+        });
+      };
+
+      $("skillStealBottom2").onclick = () => {
+        socket.emit("game:skillUse", { kind: "steal_bottom_2" }, (res) => {
+          if (!res?.ok) alert("技能使用失败");
+        });
+      };
+
+      $("play").onclick = () => {
+        const ids = [...selected];
+        if (ids.length === 0) return alert("请选择要出的牌");
+        socket.emit("game:play", { cardIds: ids }, (res) => {
+          if (!res?.ok) alert(`出牌失败：${res?.error || "UNKNOWN"}`);
+          selected.clear();
+        });
+      };
+
+      $("pass").onclick = () => {
+        socket.emit("game:pass", {}, (res) => {
+          if (!res?.ok) alert("不能过");
+          selected.clear();
+        });
+      };
+
+      // Auto-join if room is in URL
+      const room = params.get("room");
+      if (room) {
+        $("roomId").value = room;
+        setTimeout(() => {
+          const token = getToken(room);
+          socket.emit("room:join", { roomId: room, name: getName(), token }, (res) => {
+            if (!res?.ok) {
+              alert(
+                res?.error === "ROOM_FULL"
+                  ? "房间满了（最多2个真人）"
+                  : "加入失败"
+              );
+            }
+            if (res?.token) setToken(room, res.token);
+          });
+        }, 50);
+      }
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: doudizhu-skills-server
+    env: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: CORS_ORIGIN
+        value: https://YOUR_GITHUB_USERNAME.github.io
+
